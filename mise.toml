@@ -1,0 +1,7 @@
+[tools]
+go = "latest"
+golangci-lint = "latest"
+
+[env]
+GOBIN = "{{config_root}}/bin"
+_.path = ["bin"]
