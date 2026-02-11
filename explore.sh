@@ -8,7 +8,7 @@ awk '
     print "acts = "  acts
     print "scenes  = " scenes
   }
-' ./lear.txt
+' ./internal/text/lear.txt
 
 # printf "number of quotes: "
 # grep -e '^[A-Z]+\.'  | wc -l

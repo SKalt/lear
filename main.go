@@ -2,42 +2,65 @@ package main
 
 import (
 	_ "embed"
+	"encoding/binary"
 	"fmt"
-	"regexp"
+	"slices"
 	"strings"
 	"time"
+
+	"gitub.com/skalt/lear/internal/text"
 )
 
-var quotePattern = regexp.MustCompile(`[A-Z]+\.`)
+//go:generate go run ./internal/index/index.go
 
-const (
-	lines = 1051
-	// acts   = 10
-	// scenes = 26
-)
-const start = "*** START OF THE PROJECT GUTENBERG EBOOK KING LEAR ***"
-const end = "*** END OF THE PROJECT GUTENBERG EBOOK KING LEAR ***"
+//go:embed internal/index/quotes.idx
+var quoteIndex []byte
 
-//go:embed lear.txt
-var lear string
-var quoteRanges [][]int
+//go:embed internal/index/acts.idx
+var actIndex []byte
+
+//go:embed internal/index/scenes.idx
+var sceneIndex []byte
+
+var acts, scenes []int
 
 func init() {
-	// pre-process the text
-	lear = lear[strings.Index(lear, start)+len(start) : strings.Index(lear, end)]
-	quoteRanges = quotePattern.FindAllStringIndex(lear, lines)
-	if len(quoteRanges) != lines {
-		panic(fmt.Errorf("nQuotes %d != %d lines", len(quoteRanges), lines))
+	scenes = make([]int, 0, len(sceneIndex)/4)
+	for chunk := range slices.Chunk(sceneIndex, 4) {
+		scenes = append(scenes, int(binary.BigEndian.Uint32(chunk)))
+	}
+	acts = make([]int, 0, len(actIndex)/4)
+	for chunk := range slices.Chunk(actIndex, 4) {
+		acts = append(acts, int(binary.BigEndian.Uint32(chunk)))
 	}
 }
 
+var numerals = []string{
+	"I", "II", "III", "IV", "V", "VI", "VII",
+}
+
+func romanize(i int) string {
+	return numerals[i]
+}
+
+func fromIndex(idx []byte, i int) int {
+	return int(binary.BigEndian.Uint32(idx[i*4 : i*4+4]))
+}
+
+func getQuote(tty bool) (result string) {
+	output := strings.Builder{}
+	nQuotes := len(quoteIndex)/4 - 2 // lead-up, trailing space
+	quoteNumber := int(time.Now().UnixMilli() % int64(nQuotes))
+	act, _ := slices.BinarySearch(acts, quoteNumber)
+	scene, _ := slices.BinarySearch(scenes, quoteNumber)
+	start := fromIndex(quoteIndex, quoteNumber)
+	end := fromIndex(quoteIndex, quoteNumber+1)
+	output.WriteString(fmt.Sprintf("KING LEAR Act %s, Scene %s\n", romanize(act), romanize(scene)))
+	output.WriteString(text.Lear[start:end])
+	output.WriteRune('\n')
+	return output.String()
+}
+
 func main() {
-	quoteNumber := int(time.Now().UnixMilli() % lines)
-	q := quoteRanges[quoteNumber] // random line
-	r := []int{len(lear)}
-	// q1 := len(lear)
-	if quoteNumber < len(quoteRanges) {
-		r = quoteRanges[quoteNumber+1]
-	}
-	fmt.Println(lear[q[0]:r[0]])
+	fmt.Println(getQuote(true))
 }
