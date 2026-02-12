@@ -91,7 +91,6 @@ func main() {
 	} else {
 		quoteNumber = int(time.Now().UnixMilli() % int64(nQuotes))
 	}
-	fmt.Println(quoteNumber)
 	quote := getQuote(quoteNumber)
 	output := strings.Builder{}
 	act, scene := getLoc(quoteNumber)
@@ -103,6 +102,19 @@ func main() {
 		fmt.Fprintf(&output, ", Scene %s", romanize(scene-acts[act]))
 	}
 	output.WriteString("\n")
-	fmt.Fprint(&output, quote)
+	if scene > 0 {
+		lines := strings.Lines(quote)
+		for line := range lines {
+			output.WriteString(line)
+			break
+		}
+		for line := range lines {
+			output.WriteString("    ")
+			output.WriteString(line)
+		}
+	} else {
+
+		fmt.Fprint(&output, quote)
+	}
 	fmt.Println(output.String())
 }
