@@ -113,8 +113,11 @@ func main() {
 			output.WriteString(line)
 		}
 	} else {
-
 		fmt.Fprint(&output, quote)
 	}
-	fmt.Println(output.String())
+	out := output.String()
+	fmt.Print(out)
+	if !strings.HasSuffix(out, "\n") {
+		fmt.Println()
+	}
 }
