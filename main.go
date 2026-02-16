@@ -10,7 +10,7 @@ import (
 	"strings"
 	"time"
 
-	"gitub.com/skalt/lear/internal/text"
+	"github.com/skalt/lear/internal/text"
 )
 
 //go:generate go run ./internal/index/index.go
