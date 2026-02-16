@@ -8,7 +8,7 @@ import (
 	"strings"
 
 	"github.com/skalt/pathlib.go"
-	"gitub.com/skalt/lear/internal/text"
+	"github.com/skalt/lear/internal/text"
 )
 
 var quoteP = regexp.MustCompile(`^[A-Z]+\.`)
