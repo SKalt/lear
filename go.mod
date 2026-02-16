@@ -1,4 +1,4 @@
-module gitub.com/skalt/lear
+module github.com/skalt/lear
 
 go 1.25.7
 
