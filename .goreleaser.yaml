@@ -1,0 +1,91 @@
+version: 2
+project_name: lear
+
+env:
+  - GO111MODULE=on
+
+checksum:
+  name_template: "sha256sums.txt"
+
+changelog:
+  sort: asc
+  filters:
+    exclude:
+      - "^docs:"
+      - "^test:"
+      - "^chore:"
+
+builds:
+  - id: lear
+    binary: lear
+    main: ./main.go
+    env:
+      - CGO_ENABLED=0
+    goos:
+      - linux
+      - darwin
+      - windows
+    goarch:
+      - amd64
+      - arm64
+    goarm:
+      - v7
+    ldflags:
+      - -s -w
+      - -X main.version={{ .Version }}
+      - -X main.commit={{ .Commit }}
+      - -X main.date={{ .Date }}
+
+archives:
+  - id: default
+    format_overrides:
+      - goos: windows
+        formats:
+          - zip
+    formats:
+      - tar.gz
+    files:
+      - README.md
+      - LICENSE*
+
+nfpms:
+  - id: default
+    package_name: lear
+    vendor: skalt
+    homepage: https://github.com/skalt/lear
+    maintainer: skalt
+    description: Random quotes from Shakespeare's King Lear
+    license: CC0
+    formats:
+      - deb
+      - rpm
+    bindir: /usr/bin
+
+brews:
+  - repository:
+      owner: skalt
+      name: homebrew-lear
+      branch: main
+    homepage: https://github.com/skalt/lear
+    description: Random quotes from Shakespeare's King Lear
+    license: CC0
+    install: bin.install "lear"
+    test: |
+      system "#{bin}/lear --version"
+
+scoops:
+  - name: lear
+    repository:
+      owner: skalt
+      name: scoop-lear
+      branch: main
+    homepage: https://github.com/skalt/lear
+    description: Random quotes from Shakespeare's King Lear
+    license: CC0
+    commit_author:
+      name: lear-bot
+      email: lear-bot@users.noreply.github.com
+    commit_msg_template: |
+      {{ .ProjectName }} v{{ .Version }}
+
+      Automated release by goreleaser.
